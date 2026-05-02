@@ -1,16 +1,8 @@
-# Maven
 target/
-
-# Eclipse
-.settings/
-.project
+test-output/
+test-results/
 .classpath
-
-# Logs
+.project
+.settings/
+.cache/
 *.log
-
-# OS files
-.DS_Store
-
-# Chrome / system (IMPORTANT)
-AppData/

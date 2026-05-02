@@ -1,0 +1,31 @@
+name: Run Automation Tests
+
+on:
+  push:
+    branches: [ "main" ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Set up Java
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        # PlayWrightdemo module uses <release>22</release> in its pom, ensure JDK 22 is available in CI
+        java-version: '22'
+
+    - name: Build PlayWrightdemo and install to local repo
+      run: mvn -f PlayWrightdemo/pom.xml install -DskipTests=true
+
+    - name: Build BddCucu and install to local repo
+      run: mvn -f BddCucu/pom.xml install -DskipTests=true
+
+    - name: Run TestFirstProject tests
+      run: mvn -f TestFirstProject/pom.xml test
+	  
+	  

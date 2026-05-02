@@ -1,0 +1,57 @@
+name: Java CI with Maven
+
+on:
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    # ensure commands run from repository root by default
+    defaults:
+      run:
+        working-directory: .
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 17 and enable Maven cache
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'maven'
+
+      - name: Cache Maven local repository (fallback)
+        uses: actions/cache@v4
+        with:
+          path: ~/.m2/repository
+          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+          restore-keys: |
+            ${{ runner.os }}-m2-
+
+      - name: Install dependencies (skip tests)
+        run: mvn -B -DskipTests=true clean install
+
+      - name: Run tests
+        run: mvn -B test
+
+      - name: Upload test reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            target/surefire-reports/**
+            target/failsafe-reports/**
+            test-output/**
+
+      - name: Show brief test logs on failure
+        if: failure()
+        run: |
+          echo "==== Failed tests (tail of surefire reports) ===="
+          for f in target/surefire-reports/*.txt 2>/dev/null; do echo "-- $f --"; tail -n 200 "$f" || true; done
